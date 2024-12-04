@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatsApps</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+
+  <style>
+    #messages {
+      position: sticky;
+      top: 0;
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      scroll-behavior: smooth;
+    }
+
+    #messages::-webkit-scrollbar {
+      display: none;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      height: 100%;
+    }
+
+    #sidebar {
+      flex: 0 0 300px; /* Fixed width on larger screens */
+      background-color: #f0f0f0;
+    }
+
+    #main-content {
+      flex: 1;
+      background-color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      #sidebar {
+        flex: 0 0 100%; /* Full width on smaller screens */
+      }
+    }
+
+  </style>
+
+  <div id="app" class="min-h-screen flex flex-col bg-slate-50">
+    <div class="flex flex-grow">
+      <aside class="w-1/4 md:w-full shadow-md p-2 border-r overflow-y-auto flex flex-col justify-between" id="sidebar">
+        <div class="flex flex-col flex-grow">
+          <div class="flex justify-between">
+            <div class="py-2 px-2 flex gap-2">
+            <button class="bg-gray-900 rounded-xl hover:bg-gray-500 py-2 px-4">
+              <img src="images/add-user.png" alt="add-user" width="20" height="10">
+            </button>
+            <div class="px-2">
+              <h1 class="font-semibold text-2xl">ChatsApp</h1>
+              <p class="text-sm ps-0.5">Mustafa BAGCI</p>
+            </div>
+          </div>
+          <button id="openSidebar" class="lg:hidden md:hidden">
+            <img src="images/collapseDark.png" alt="collapse" class="rounded-xl hover:bg-gray-900">
+          </button>
+          </div>
+          <br>
+
+          <div class="p-1">
+            <h3 class="text-md text-gray-500 font-semibold px-2">Discussions</h3>
+            <br>
+            <div class="flex justify-between cursor-pointer hover:bg-gray-100 p-2 rounded-xl" id="toggle-friendsList">
+              <div class="flex gap-2">
+                <img src="images/friends.png" alt="friends" class="object-contain">
+                <h2 class="text-lg text-gray-600 font-semibold">Friends</h2>
+              </div>
+              <div class="flex">
+                <button class="font-semibold text-gray-500" id="toggle-friends">&#62;</button>
+              </div>
+            </div>
+            <ul id="friends-list" class="space-y-2 hidden border-l ms-4 px-4 py-2">
+              <% if (friends.length > 0) { %>
+                <% friends.forEach(friend => { %>
+                  <li 
+                    class="text-gray-700 duration-300 cursor-pointer font-normal hover:bg-gray-100 p-1 rounded-lg ps-2"
+                    data-id="<%= friend.id %>"
+                  >
+                    <%= friend.first_name %> <%= friend.last_name %>
+                  </li>
+                <% }) %>
+              <% } else { %>
+                <li class="text-gray-500">No friends</li>
+              <% } %>
+            </ul>
+            <div class="flex justify-between cursor-pointer hover:bg-gray-100 p-2 rounded-xl" id="openFriendRequests">
+              <div class="flex gap-2">
+                <img src="images/add-friend.png" alt="friends" class="object-contain">
+                <h2 class="text-lg text-gray-600 font-semibold">Friend Requests</h2>
+              </div>
+            </div> 
+            <div class="flex justify-between cursor-pointer hover:bg-gray-100 p-2 rounded-xl">
+              <div class="flex gap-2">
+                <img src="images/setting.png" alt="friends" class="object-contain">
+                <h2 class="text-lg text-gray-600 font-semibold">Settings</h2>
+              </div>
+            </div>                      
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between w-full p-3 border-t mt-auto">
+          <div class="flex items-center gap-3">
+            <img src="https://i.pravatar.cc/50" alt="avatar" class="rounded-full">
+            <div style="line-height: 1; display: inline-block;">
+              <p style="margin: 0; padding: 0; font-size: small; padding-bottom: 5px;">Welcome,</p>
+              <h1 style="margin: 0; padding: 0; font-weight: 500; font-size: 1.1rem;"><%= user.first_name %> <%= user.last_name %></h1>
+            </div>
+          </div>
+          <a href="/logout">
+            <button class="bg-gray-900 rounded-xl hover:bg-gray-500 py-3 px-4">
+              <img src="images/logout.png" alt="logout" width="20" height="20">
+            </button>
+          </a>
+        </div>
+      </aside>
+
+      <main class="flex-grow flex flex-col bg-gray-50">
+        <div id="active-friend-header" class="flex px-4 bg-black text-white py-4 shadow-xl w-full items-center gap-3">
+          <button id="collapseSidebar">
+            <img src="images/collapse.png" alt="collapse" class="rounded-xl hover:bg-gray-900">
+          </button>
+          <img src="https://i.pravatar.cc/50" alt="avatar" class="rounded-full" id="active-friend-avatar">
+          <div>
+            <h1 class="font-semibold" id="active-friend-name">Select Friend</h1>
+            <small id="active-friend-status" class="text-gray-500">Offline</small>
+          </div>
+        </div>
+
+        <div id="messages" class="flex-grow overflow-y-auto p-3 bg-slate-50 shadow-inner space-y-2 sticky top-0">
+          <!-- Message -->
+        </div>
+        
+        <form id="message-form" class="mt-4 pb-2 flex gap-2 m-2">
+          <input 
+            type="text" 
+            id="message-input" 
+            placeholder="Type your message..." 
+            required 
+            class="flex-grow py-4 rounded-xl ps-4 border focus:outline-none focus:ring-1 focus:ring-gray-100"
+          />
+          <button 
+            type="submit" 
+            class="bg-gray-900 text-sm px-6 text-white rounded-xl hover:bg-gray-700 transition duration-300"
+          >
+            ➤
+          </button>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <div id="addFriendModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+      <button id="closeAddFriendModal" class="absolute top-2 right-2 text-gray-500 text-2xl">&times;</button>
+      <h2 class="text-xl font-semibold mb-4">Add Friend</h2>
+      <form id="add-friend-form-modal" class="flex flex-col">
+        <input 
+          type="email" 
+          id="friend-email-modal" 
+          placeholder="Enter friend's email" 
+          name="email"
+          required 
+          class="w-full border rounded-md p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-500"
+        />
+        <div class="flex justify-end">
+          <button 
+            type="submit" 
+            class="bg-gray-900 text-sm text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
+          >
+            Add
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="friendRequestsModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+      <button id="closeModal" class="absolute top-2 right-2 text-gray-500 text-2xl">&times;</button>
+      <h2 class="text-xl font-semibold mb-4">Friend Requests</h2>
+      <div id="friendRequestsList">
+      </div>
+    </div>
+  </div>  
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+
+    const socket = io();
+
+    socket.emit('setUser', <%= user.id %>);
+
+    document.getElementById('collapseSidebar').addEventListener('click', function() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('hidden');
+    });
+
+    document.getElementById('openSidebar').addEventListener('click', function() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.add('hidden');
+    });
+
+    const friendsDiv = document.getElementById('toggle-friendsList');
+    const toggleButton = document.getElementById('toggle-friends');
+  
+    friendsDiv.addEventListener('click', () => {
+      friendsList.classList.toggle('hidden');
+      
+      if (friendsList.classList.contains('hidden')) {
+        toggleButton.innerHTML = '&#62;';
+        toggleButton.className = 'font-semibold text-gray-500';
+      } else {
+        toggleButton.innerHTML = '&#8964';
+        toggleButton.className = 'font-semibold text-gray-500';
+      }
+    });
+
+    const addUserButton = document.querySelector('.bg-gray-900');
+    const addFriendModal = document.getElementById('addFriendModal');
+    const closeAddFriendModal = document.getElementById('closeAddFriendModal');
+
+    addUserButton.addEventListener('click', () => {
+      addFriendModal.classList.remove('hidden');
+    });
+
+    closeAddFriendModal.addEventListener('click', () => {
+      addFriendModal.classList.add('hidden');
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === addFriendModal) {
+        addFriendModal.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('add-friend-form-modal').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const friendEmail = document.getElementById('friend-email-modal').value.trim();
+      if (!friendEmail) {
+        alert("Please enter a valid email.");
+        return;
+      }
+
+      try {
+        const response = await fetch("/addFriend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: friendEmail }),
+        });
+
+        const result = await response.json();
+        alert(result.message || "Friend added successfully!");
+        addFriendModal.classList.add('hidden');
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred while adding the friend.");
+      }
+    });
+
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const messagesDiv = document.getElementById('messages');
+    const friendsList = document.getElementById('friends-list');
+    let selectedFriendId = null;
+
+    document.getElementById("openFriendRequests").addEventListener("click", async () => {
+      const modal = document.getElementById("friendRequestsModal");
+
+      try {
+        const response = await fetch("/friendRequests");
+        const data = await response.json();
+
+        const friendRequestsList = document.getElementById("friendRequestsList");
+
+        if (data.friendRequests && data.friendRequests.length > 0) {
+          friendRequestsList.innerHTML = data.friendRequests.map(request => {
+            return `
+              <div>
+                <span><b>${request.name}</b> wants to be your friend.</span>
+                <div class="flex pt-4 justify-end">
+                  <button class="acceptBtn bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 text-sm rounded-lg" data-id="${request.id}">Accept</button>
+                  <button class="declineBtn bg-gray-100 hover:bg-gray-200 px-4 py-2 text-sm rounded-lg ml-2" data-id="${request.id}">Decline</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          friendRequestsList.innerHTML = "<p class='text-gray-500'>No friend requests available</p>";
+        }
+
+        modal.classList.remove('hidden');
+        
+      } catch (error) {
+        console.error('Error fetching friend requests:', error);
+      }
+    });
+
+    document.getElementById("closeModal").addEventListener("click", () => {
+      const modal = document.getElementById("friendRequestsModal");
+      modal.classList.add("hidden");
+    });
+
+    window.addEventListener("click", (e) => {
+      const modal = document.getElementById("friendRequestsModal");
+      if (e.target === modal) {
+        modal.classList.add("hidden");
+      }
+    });
+
+    document.addEventListener("click", async (e) => {
+      if (e.target.classList.contains("acceptBtn")) {
+        const friendId = e.target.getAttribute("data-id");
+        try {
+          const response = await fetch("/acceptFriendRequest", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ friendId })
+          });
+          
+          const data = await response.json();
+          alert(data.message);
+          location.reload();
+        } catch (error) {
+          console.error('Error accepting friend request:', error);
+        }
+      }
+
+      if (e.target.classList.contains("declineBtn")) {
+        const friendId = e.target.getAttribute("data-id");
+        try {
+          const response = await fetch("/declineFriendRequest", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ friendId })
+          });
+          
+          const data = await response.json();
+          alert(data.message);
+          location.reload();
+        } catch (error) {
+          console.error('Error declining friend request:', error);
+        }
+      }
+    });
+
+    messageForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (!selectedFriendId) {
+        alert("Select a friend to send a message!");
+        return;
+      }
+
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      socket.emit('sendMessage', {
+        from_user_id: <%= user.id %>,
+        to_user_id: selectedFriendId,
+        message,
+      });
+
+      messageInput.value = '';
+    });
+
+    socket.on('newMessage', (data) => {
+      const { senderFullName, message, senderId } = data;
+      const msgContainer = document.createElement('div');
+      msgContainer.className = "space-y-2";
+
+      const messageBubbleContainer = document.createElement('div');
+      messageBubbleContainer.className = "flex items-center gap-2 justify-start";
+
+      const avatar = document.createElement('img');
+      avatar.src = `https://i.pravatar.cc/50?u=${senderId}`;
+      avatar.alt = `${senderFullName}'s avatar`;
+      avatar.className = "rounded-full";
+
+      const messageBubble = document.createElement('div');
+      messageBubble.className = "bg-gray-100 inline-block p-2 rounded-xl rounded-br-lg";
+
+      const senderName = document.createElement('p');
+      senderName.className = "text-sm font-bold";
+      senderName.textContent = senderFullName;
+
+      const messageContent = document.createElement('p');
+      messageContent.textContent = message;
+
+      messageBubble.appendChild(senderName);
+      messageBubble.appendChild(messageContent);
+      messageBubbleContainer.appendChild(avatar);
+      messageBubbleContainer.appendChild(messageBubble);
+
+      const timestampContainer = document.createElement('div');
+      timestampContainer.className = "flex justify-start w-full mt-1";
+
+      const formattedDate = new Date().toLocaleString();
+      const timestamp = document.createElement('small');
+      timestamp.className = "text-gray-500";
+      timestamp.textContent = formattedDate;
+
+      timestampContainer.appendChild(timestamp);
+      msgContainer.appendChild(messageBubbleContainer);
+      msgContainer.appendChild(timestampContainer);
+
+      messagesDiv.appendChild(msgContainer);
+    });
+
+    socket.on('messageSent', (data) => {
+      const { message } = data;
+      const msgContainer = document.createElement('div');
+      msgContainer.className = "space-y-2";
+
+      const messageBubbleContainer = document.createElement('div');
+      messageBubbleContainer.className = "flex items-center gap-2 justify-end";
+
+      const avatar = document.createElement('img');
+      avatar.src = "https://i.pravatar.cc/50?u=current-user";
+      avatar.alt = "Your avatar";
+      avatar.className = "rounded-full";
+
+      const messageBubble = document.createElement('div');
+      messageBubble.className = "bg-slate-100 inline-block p-2 rounded-xl rounded-bl-lg";
+
+      const senderName = document.createElement('p');
+      senderName.className = "text-sm font-bold";
+      senderName.textContent = "You";
+
+      const messageContent = document.createElement('p');
+      messageContent.textContent = message;
+
+      messageBubble.appendChild(senderName);
+      messageBubble.appendChild(messageContent);
+      messageBubbleContainer.appendChild(messageBubble);
+      messageBubbleContainer.appendChild(avatar);
+
+      const timestampContainer = document.createElement('div');
+      timestampContainer.className = "flex justify-end w-full mt-1";
+
+      const formattedDate = new Date().toLocaleString();
+      const timestamp = document.createElement('small');
+      timestamp.className = "text-gray-500";
+      timestamp.textContent = formattedDate;
+
+      timestampContainer.appendChild(timestamp);
+      msgContainer.appendChild(messageBubbleContainer);
+      msgContainer.appendChild(timestampContainer);
+
+      messagesDiv.appendChild(msgContainer);
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+
+    friendsList.addEventListener('click', async (e) => {
+      const friendElement = e.target.closest('li');
+      if (friendElement) {
+        selectedFriendId = friendElement.dataset.id;
+
+        document.querySelectorAll('#friends-list li').forEach((li) => {
+          li.classList.remove('bg-gray-100');
+        });
+        friendElement.classList.add('bg-gray-100');
+
+        await loadMessages(selectedFriendId);
+      }
+    });
+
+    document.getElementById("add-friend-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const friendEmail = document.getElementById("friend-email").value.trim();
+      if (!friendEmail) {
+        alert("Please enter a valid email.");
+        return;
+      }
+
+      try {
+        const response = await fetch("/addFriend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: friendEmail }),
+        });
+
+        const result = await response.json();
+        alert(result.message || "Friend added successfully!");
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred while adding the friend.");
+      }
+    });
+
+    const activeFriendHeader = document.getElementById('active-friend-header');
+    const activeFriendName = document.getElementById('active-friend-name');
+    const activeFriendStatus = document.getElementById('active-friend-status');
+    const activeFriendAvatar = document.getElementById('active-friend-avatar');
+
+    friendsList.addEventListener('click', async (e) => {
+      const friendElement = e.target.closest('li');
+      if (friendElement) {
+        selectedFriendId = friendElement.dataset.id;
+
+        document.querySelectorAll('#friends-list li').forEach((li) => {
+          li.classList.remove('bg-gray-100');
+        });
+        friendElement.classList.add('bg-gray-100');
+
+        const friendName = friendElement.textContent.trim();
+        activeFriendName.textContent = friendName;
+        activeFriendAvatar.src = `https://i.pravatar.cc/50?u=${selectedFriendId}`;
+
+        socket.emit('getFriendStatus', { friendId: selectedFriendId });
+
+        await loadMessages(selectedFriendId);
+      }
+    });
+
+    socket.on('friendStatus', (data) => {
+      const { isOnline } = data;
+      activeFriendStatus.textContent = isOnline ? 'Online' : 'Offline';
+      activeFriendStatus.className = isOnline ? 'text-green-700' : 'text-gray-500';
+    });
+
+    socket.on('friendStatusUpdate', (data) => {
+      const { friendId, isOnline } = data;
+      if (friendId === selectedFriendId) {
+        activeFriendStatus.textContent = isOnline ? 'Online' : 'Offline';
+        activeFriendStatus.className = isOnline ? 'text-green-700' : 'text-gray-500';
+      }
+    });
+
+    socket.emit('getInitialStatus', { userId: <%= user.id %> });
+
+    async function loadMessages(friendId) {
+      try {
+        const response = await fetch(`/messages/${friendId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch messages");
+        }
+
+        const messages = await response.json();
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+
+        if (messages.length === 0) {
+          const noMessages = document.createElement('p');
+          noMessages.textContent = 'No messages found.';
+          messagesDiv.appendChild(noMessages);
+          return;
+        }
+
+        const friendMessage = messages.find(
+          (msg) => msg.from_user_id !== <%= user.id %>
+        );
+
+        if (friendMessage) {
+          const friendName = `${friendMessage.first_name} ${friendMessage.last_name}`;
+          document.getElementById('active-friend-name').textContent = friendName;
+        }
+
+        messages.forEach((msg) => {
+          const messageContainer = document.createElement('div');
+          messageContainer.className = "space-y-2";
+
+          const isCurrentUser = msg.from_user_id === <%= user.id %>;
+
+          const messageBubbleContainer = document.createElement('div');
+          messageBubbleContainer.className = `flex items-center gap-2 ${isCurrentUser ? "justify-end" : "justify-start"}`;
+
+          const avatar = document.createElement('img');
+          avatar.src = isCurrentUser
+            ? "https://i.pravatar.cc/50?u=current-user"
+            : `https://i.pravatar.cc/50?u=${msg.from_user_id}`;
+          avatar.alt = isCurrentUser ? "Your avatar" : `${msg.first_name}'s avatar`;
+          avatar.className = "rounded-full";
+
+          const messageBubble = document.createElement('div');
+          messageBubble.className = `bg-${isCurrentUser ? 'slate-100' : 'gray-100'} inline-block p-2 rounded-xl ${isCurrentUser ? "rounded-bl-lg" : "rounded-br-lg"}`;
+
+          const senderName = document.createElement('p');
+          senderName.className = "text-sm font-bold";
+          senderName.textContent = isCurrentUser ? "You" : `${msg.first_name} ${msg.last_name}`;
+
+          const messageContent = document.createElement('p');
+          messageContent.textContent = msg.message;
+
+          messageBubble.appendChild(senderName);
+          messageBubble.appendChild(messageContent);
+
+          if (isCurrentUser) {
+            messageBubbleContainer.appendChild(messageBubble);
+            messageBubbleContainer.appendChild(avatar);
+          } else {
+            messageBubbleContainer.appendChild(avatar);
+            messageBubbleContainer.appendChild(messageBubble);
+          }
+
+          const timestampContainer = document.createElement('div');
+          timestampContainer.className = `flex ${isCurrentUser ? "justify-end" : "justify-start"} w-full mt-1`;
+
+          const formattedDate = new Date(msg.timestamp).toLocaleString();
+          const timestamp = document.createElement('small');
+          timestamp.className = "text-gray-500";
+          timestamp.textContent = formattedDate;
+
+          timestampContainer.appendChild(timestamp);
+          messageContainer.appendChild(messageBubbleContainer);
+          messageContainer.appendChild(timestampContainer);
+
+          messagesDiv.appendChild(messageContainer);
+        });
+
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      } catch (err) {
+        console.error('Error loading messages:', err);
+
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = 'No messages';
+        document.getElementById('messages').appendChild(errorMessage);
+      }
+    }
+
+  </script>
+</body>
+</html>
