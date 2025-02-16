@@ -4,79 +4,48 @@
 
 ![Screenshot of the Chat Application](chat-chatpage.png)
 
-This is a real-time chat application built using **Express.js** and **WebSockets (Socket.io)**. The project enables multiple users to communicate in real-time within a shared chat room.
+This is a realtime chat application built with Express.js and Socket.io.
 
 ## Features
 
-- **Real-time messaging** using WebSockets.
-- **Multiple user support** with unique usernames.
-- **User join/leave notifications**.
-- **Typing indicators** to show when a user is typing.
-- **Simple UI** for seamless chatting experience.
+- Realtime messaging
+- User authentication
+- Chat rooms
+- Typing indicators
+- Message history
 
-## Technologies Used
+## Installation
 
-- **Node.js** & **Express.js** - Backend framework
-- **Socket.io** - WebSocket communication
-- **HTML, CSS, JavaScript** - Frontend
-
-## **Installation & Setup**
-
-### Prerequisites
-
-Ensure you have **Node.js** installed on your system.
-
-### Steps to Run the Project
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/Mustafa-Bagci/realtime-chat-express.git
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/realtime-chat-express.git
    ```
-
-2. **Navigate to the project folder:**
-
-   ```bash
+2. Navigate to the project directory:
+   ```sh
    cd realtime-chat-express
    ```
-
-3. **Install dependencies:**
-
-   ```bash
+3. Install dependencies:
+   ```sh
    npm install
    ```
 
-4. **Run the application:**
+## Usage
 
-   ```bash
-   node server.js
+1. Start the server:
+   ```sh
+   npm start
    ```
-
-5. **Access the app in a browser:**
-   Open `http://localhost:3000` in your web browser.
-
-## Project Structure
-
-```
-realtime-chat-express/
-├── public/          # Static frontend files (HTML, CSS, JS)
-├── server.js        # Main server file (Express & Socket.io setup)
-├── package.json     # Project dependencies
-└── README.md        # Project documentation
-```
-
-## Future Enhancements
-
-- User authentication
-- Private chat rooms
-- Message history storage
-- UI improvements
+2. Open your browser and navigate to `http://localhost:3000`
 
 ## Contributing
 
-Contributions are welcome! Feel free to submit a pull request.
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature-branch`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature-branch`)
+5. Create a new Pull Request
 
-## License
+## Contact
 
-This project is licensed under the MIT License.
+For any inquiries, please contact [your email].
 
