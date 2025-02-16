@@ -18,7 +18,7 @@ This is a realtime chat application built with Express.js and Socket.io.
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/Mustafa-Bagci/realtime-chat-express.git
+   git clone https://github.com/mustafa-bagci/realtime-chat-express.git
    ```
 2. Navigate to the project directory:
    ```sh
