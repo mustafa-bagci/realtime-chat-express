@@ -1,10 +1,8 @@
-# Real-Time Chat Application
-
-## Overview
+# SocketChat
 
 ![Screenshot of the Chat Application](chat-chatpage.png)
 
-This is a realtime chat application built with Express.js and Socket.io.
+This is a SocketChat project built with Express.js and Socket.io.
 
 ## Features
 
@@ -18,11 +16,11 @@ This is a realtime chat application built with Express.js and Socket.io.
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/mustafa-bagci/realtime-chat-express.git
+   git clone https://github.com/mustafa-bagci/SocketChat.git
    ```
 2. Navigate to the project directory:
    ```sh
-   cd realtime-chat-express
+   cd SocketChat 
    ```
 3. Install dependencies:
    ```sh
